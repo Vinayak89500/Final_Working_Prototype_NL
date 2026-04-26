@@ -75,17 +75,16 @@ claude-compass/
 | `POST` | `/analyze` | Analyzes intent → returns JSON scorecard, steps, savings |
 | `POST` | `/answer` | Returns a direct LLM answer to the user's query |
 
-## ☁️ Deploying to the Web
+## ☁️ Deployment
 
-This app has a Python backend so you need a service that runs Python:
+### Option A: Hybrid Hosting (Recommended)
+Host the frontend on **GitHub Pages** (free, fast) and the backend on **Render** (free tier).
 
-| Platform | Free Tier | Deploy Command |
-|---|---|---|
-| [Render](https://render.com) | ✅ Yes | Connect GitHub repo, set env var |
-| [Railway](https://railway.app) | ✅ Yes (limited) | `railway up` |
-| [Fly.io](https://fly.io) | ✅ Yes | `fly launch` |
+1.  **Backend (Render):** Create a Web Service on Render, connect your repo, and set the start command to `python main.py`. Add your `OPENROUTER_API_KEY` in Environment Variables.
+2.  **Frontend (GitHub Pages):** Enable GitHub Pages in your repo settings. The `index.html` is pre-configured to automatically point to your Render backend when hosted online.
 
-**For Render:** Set the Start Command to `python main.py` and add `OPENROUTER_API_KEY` as an Environment Variable in the dashboard.
+### Option B: All-in-One (Render)
+You can also host both on Render. Connect your repo and follow the same steps as above. Your site will be available at your-app-name.onrender.com.
 
 ## ⚠️ Important
 
