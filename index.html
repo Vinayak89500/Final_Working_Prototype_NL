@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claude Compass — AI-Native Decision Intelligence</title>
+    <meta name="description" content="Claude Compass analyzes your task intent and recommends the optimal Claude execution mode — Simple Prompt, Workflow, or Agent.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* ===== DESIGN TOKENS ===== */
+        :root {
+            --bg-primary: #0f0f1a;
+            --bg-secondary: #1a1a2e;
+            --bg-card: #16213e;
+            --bg-card-hover: #1c2a4a;
+            --bg-input: #0d1b2a;
+            --text-primary: #e8e8f0;
+            --text-secondary: #a0a0b8;
+            --text-muted: #6b6b82;
+            --accent-primary: #d4a574;
+            --accent-secondary: #e8c49a;
+            --accent-glow: rgba(212, 165, 116, 0.15);
+            --success: #4ade80;
+            --success-bg: rgba(74, 222, 128, 0.1);
+            --warning: #fbbf24;
+            --warning-bg: rgba(251, 191, 36, 0.1);
+            --danger: #f87171;
+            --info: #60a5fa;
+            --info-bg: rgba(96, 165, 250, 0.1);
+            --border: rgba(255, 255, 255, 0.06);
+            --border-active: rgba(212, 165, 116, 0.3);
+            --shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+            --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.5);
+            --radius: 12px;
+            --radius-lg: 16px;
+            --radius-xl: 20px;
+            --transition: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+            --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        /* ===== RESET & BASE ===== */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { font-size: 16px; scroll-behavior: smooth; }
+        body {
+            font-family: var(--font);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* ===== BACKGROUND EFFECTS ===== */
+        .bg-gradient {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 0;
+            pointer-events: none;
+            background:
+                radial-gradient(ellipse at 20% 0%, rgba(212, 165, 116, 0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 100%, rgba(96, 165, 250, 0.04) 0%, transparent 50%);
+        }
+
+        /* ===== APP CONTAINER ===== */
+        .app {
+            position: relative;
+            z-index: 1;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ===== HEADER ===== */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 0;
+            margin-bottom: 8px;
+        }
+        .logo { display: flex; align-items: center; gap: 10px; }
+        .logo-icon {
+            width: 36px; height: 36px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px;
+        }
+        .logo-text { font-size: 18px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.02em; }
+        .logo-text span { color: var(--accent-primary); }
+        .header-badge {
+            font-size: 11px; padding: 4px 10px;
+            background: var(--accent-glow);
+            color: var(--accent-primary);
+            border: 1px solid var(--border-active);
+            border-radius: 20px; font-weight: 500;
+        }
+
+        /* ===== PROGRESS INDICATOR ===== */
+        .progress {
+            display: flex; align-items: center; gap: 4px;
+            margin: 12px 0 20px;
+        }
+        .progress-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: var(--border);
+            transition: var(--transition);
+        }
+        .progress-dot.active { background: var(--accent-primary); width: 24px; border-radius: 4px; }
+        .progress-dot.done { background: var(--success); }
+
+        /* ===== SCREENS ===== */
+        .screen { display: none; animation: fadeIn 0.4s ease; flex: 1; }
+        .screen.active { display: block; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes scaleIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* ===== SCREEN 1: INTENT INPUT ===== */
+        .chat-area { flex: 1; display: flex; flex-direction: column; gap: 16px; }
+        .chat-context { text-align: center; padding: 40px 20px 20px; }
+        .chat-context h1 {
+            font-size: 28px; font-weight: 700; letter-spacing: -0.03em; margin-bottom: 8px;
+            background: linear-gradient(135deg, var(--text-primary), var(--accent-secondary));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        .chat-context p { color: var(--text-secondary); font-size: 15px; max-width: 500px; margin: 0 auto; }
+
+        .input-area { margin-top: auto; padding: 20px 0; }
+        .input-wrapper {
+            position: relative;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 4px;
+            transition: var(--transition);
+        }
+        .input-wrapper:focus-within {
+            border-color: var(--border-active);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+        .input-wrapper textarea {
+            width: 100%; padding: 14px 16px;
+            background: transparent; border: none;
+            color: var(--text-primary); font-family: var(--font);
+            font-size: 15px; line-height: 1.5; resize: none; outline: none;
+            min-height: 56px; max-height: 160px;
+        }
+        .input-wrapper textarea::placeholder { color: var(--text-muted); }
+        .input-actions {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 4px 8px 8px;
+        }
+        .input-hint { font-size: 12px; color: var(--text-muted); }
+
+        .btn-send {
+            background: linear-gradient(135deg, var(--accent-primary), #c49660);
+            border: none; color: #0f0f1a; font-family: var(--font);
+            font-size: 14px; font-weight: 600; padding: 8px 20px;
+            border-radius: 8px; cursor: pointer; transition: var(--transition);
+        }
+        .btn-send:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(212, 165, 116, 0.3); }
+        .btn-send:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+        .example-tasks { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+        .example-chip {
+            padding: 8px 14px; background: var(--bg-card);
+            border: 1px solid var(--border); color: var(--text-secondary);
+            font-size: 13px; border-radius: 20px; cursor: pointer; transition: var(--transition);
+        }
+        .example-chip:hover { border-color: var(--border-active); color: var(--text-primary); background: var(--bg-card-hover); }
+
+        /* ===== SCREEN 2: COMPASS CARD ===== */
+        .user-msg {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 16px; margin: 12px 0;
+            font-size: 15px; color: var(--text-primary); line-height: 1.6;
+            max-width: 85%; margin-left: auto; animation: slideUp 0.3s ease;
+        }
+        .compass-card {
+            background: var(--bg-secondary); border: 1px solid var(--border-active);
+            border-radius: var(--radius-xl); padding: 24px; margin: 16px 0;
+            box-shadow: 0 0 30px var(--accent-glow); animation: scaleIn 0.4s ease;
+        }
+        .compass-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+        .compass-icon { font-size: 24px; }
+        .compass-title { font-size: 16px; font-weight: 600; color: var(--accent-secondary); }
+        .compass-body { color: var(--text-secondary); font-size: 15px; line-height: 1.7; margin-bottom: 20px; min-height: 48px; }
+        .compass-actions { display: flex; gap: 10px; }
+
+        /* ===== BUTTONS ===== */
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-primary), #c49660);
+            border: none; color: #0f0f1a; font-family: var(--font);
+            font-size: 14px; font-weight: 600; padding: 10px 24px;
+            border-radius: 8px; cursor: pointer; transition: var(--transition);
+        }
+        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(212, 165, 116, 0.3); }
+        .btn-ghost {
+            background: transparent; border: 1px solid var(--border);
+            color: var(--text-secondary); font-family: var(--font);
+            font-size: 14px; font-weight: 500; padding: 10px 24px;
+            border-radius: 8px; cursor: pointer; transition: var(--transition);
+        }
+        .btn-ghost:hover { border-color: var(--text-muted); color: var(--text-primary); }
+
+        /* ===== NAV BAR ===== */
+        .nav-bar {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 16px 0; margin-top: 12px;
+        }
+        .step-label { font-size: 13px; color: var(--text-muted); }
+
+        /* ===== SECTION LABEL ===== */
+        .section-label {
+            font-size: 11px; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 12px;
+        }
+
+        /* ===== SCREEN 3: DECOMPOSITION ===== */
+        .decomposition { margin: 20px 0; }
+        .step-list { display: flex; flex-direction: column; gap: 10px; }
+        .step-item {
+            display: flex; align-items: center; gap: 14px; padding: 14px 16px;
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: var(--radius); animation: slideUp 0.4s ease; animation-fill-mode: both;
+        }
+        .step-item:nth-child(1) { animation-delay: 0.1s; }
+        .step-item:nth-child(2) { animation-delay: 0.2s; }
+        .step-item:nth-child(3) { animation-delay: 0.3s; }
+        .step-item:nth-child(4) { animation-delay: 0.4s; }
+        .step-item:nth-child(5) { animation-delay: 0.5s; }
+        .step-num {
+            width: 28px; height: 28px; border-radius: 8px;
+            background: var(--accent-glow); border: 1px solid var(--border-active);
+            color: var(--accent-primary); font-size: 13px; font-weight: 700;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+        }
+        .step-content { flex: 1; }
+        .step-name { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+        .step-desc { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+        .step-tag { font-size: 11px; padding: 3px 8px; border-radius: 6px; font-weight: 500; flex-shrink: 0; }
+        .tag-input { background: var(--info-bg); color: var(--info); }
+        .tag-process { background: var(--warning-bg); color: var(--warning); }
+        .tag-output { background: var(--success-bg); color: var(--success); }
+
+        .complexity-badge {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 8px 14px; background: var(--bg-card);
+            border: 1px solid var(--border); border-radius: var(--radius);
+            font-size: 13px; color: var(--text-secondary); margin: 16px 0;
+            animation: slideUp 0.4s ease; animation-delay: 0.5s; animation-fill-mode: both;
+        }
+        .complexity-badge strong { color: var(--accent-primary); }
+
+        /* ===== SCREEN 4: SCORECARD ===== */
+        .scorecard { margin: 20px 0; }
+        .scorecard-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+            gap: 12px; margin-bottom: 16px;
+        }
+        .score-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 18px; transition: var(--transition);
+            animation: slideUp 0.4s ease; animation-fill-mode: both;
+        }
+        .score-card:nth-child(1) { animation-delay: 0.1s; }
+        .score-card:nth-child(2) { animation-delay: 0.2s; }
+        .score-card:nth-child(3) { animation-delay: 0.3s; }
+        .score-card.recommended {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 20px var(--accent-glow);
+            position: relative;
+        }
+        .score-card.recommended::before {
+            content: '✨ RECOMMENDED';
+            position: absolute; top: -10px; left: 16px;
+            font-size: 10px; font-weight: 700; letter-spacing: 0.05em;
+            color: #0f0f1a;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            padding: 2px 10px; border-radius: 4px;
+        }
+        .score-card-title { font-size: 15px; font-weight: 700; margin-bottom: 14px; color: var(--text-primary); }
+        .score-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 13px;
+        }
+        .score-row:last-child { border-bottom: none; }
+        .score-label { color: var(--text-muted); }
+        .score-val { font-weight: 600; color: var(--text-primary); }
+        .score-val.good { color: var(--success); }
+        .score-val.ok { color: var(--warning); }
+        .score-val.bad { color: var(--danger); }
+        .fit-bar {
+            width: 60px; height: 6px; background: rgba(255,255,255,0.06);
+            border-radius: 3px; overflow: hidden; display: inline-block;
+            vertical-align: middle; margin-right: 6px;
+        }
+        .fit-bar-fill { height: 100%; border-radius: 3px; transition: width 0.8s ease; }
+        .reasoning-box {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-left: 3px solid var(--accent-primary); border-radius: var(--radius);
+            padding: 16px; margin: 16px 0;
+            animation: slideUp 0.4s ease; animation-delay: 0.4s; animation-fill-mode: both;
+        }
+        .reasoning-box .label {
+            font-size: 11px; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 0.05em; color: var(--accent-primary); margin-bottom: 8px;
+        }
+        .reasoning-box p { font-size: 14px; color: var(--text-secondary); line-height: 1.7; }
+
+        /* ===== SCREEN 5: HANDOFF ===== */
+        .handoff-config {
+            background: var(--bg-secondary); border: 1px solid var(--border);
+            border-radius: var(--radius-xl); padding: 24px; margin: 16px 0;
+        }
+        .handoff-title {
+            display: flex; align-items: center; gap: 10px;
+            font-size: 16px; font-weight: 600; color: var(--text-primary); margin-bottom: 20px;
+        }
+        .config-step {
+            display: flex; align-items: center; gap: 12px;
+            padding: 12px 14px; background: var(--bg-card);
+            border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px;
+            font-size: 14px; color: var(--text-primary);
+        }
+        .config-step .check { color: var(--success); font-size: 16px; }
+        .config-actions { display: flex; gap: 10px; margin-top: 20px; }
+
+        /* ===== SCREEN 6: RESULT ===== */
+        .result-card {
+            background: var(--bg-secondary); border: 1px solid var(--border);
+            border-radius: var(--radius-xl); padding: 24px; margin: 16px 0;
+        }
+        .result-header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+        .result-icon {
+            width: 40px; height: 40px; border-radius: 10px;
+            background: var(--success-bg);
+            display: flex; align-items: center; justify-content: center; font-size: 20px;
+        }
+        .result-title { font-size: 18px; font-weight: 700; color: var(--text-primary); }
+        .result-subtitle { font-size: 13px; color: var(--text-muted); }
+        .savings-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin: 20px 0; }
+        .saving-item {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 16px; text-align: center;
+        }
+        .saving-val { font-size: 24px; font-weight: 800; color: var(--success); letter-spacing: -0.03em; }
+        .saving-label { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+        .saving-note { font-size: 11px; color: var(--text-muted); margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--border); }
+        .simulated-output {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 16px; margin: 16px 0;
+            font-size: 13px; color: var(--text-secondary); line-height: 1.8;
+            max-height: 200px; overflow-y: auto;
+        }
+
+        /* ===== LIVE ANSWER CARD ===== */
+        .live-answer-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-active);
+            border-radius: var(--radius-xl);
+            padding: 24px;
+            margin: 16px 0;
+            box-shadow: 0 0 24px var(--accent-glow);
+            animation: scaleIn 0.4s ease;
+        }
+        .live-answer-header {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 16px;
+        }
+        .live-answer-title {
+            display: flex; align-items: center; gap: 10px;
+        }
+        .live-answer-icon {
+            width: 32px; height: 32px; border-radius: 8px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            display: flex; align-items: center; justify-content: center;
+            font-size: 16px; flex-shrink: 0;
+        }
+        .live-answer-label {
+            font-size: 14px; font-weight: 600; color: var(--accent-secondary);
+        }
+        .live-answer-sublabel {
+            font-size: 11px; color: var(--text-muted); margin-top: 1px;
+        }
+        .btn-copy {
+            background: var(--bg-card); border: 1px solid var(--border);
+            color: var(--text-muted); font-family: var(--font);
+            font-size: 12px; padding: 5px 12px; border-radius: 6px;
+            cursor: pointer; transition: var(--transition); display: flex;
+            align-items: center; gap: 5px; flex-shrink: 0;
+        }
+        .btn-copy:hover { border-color: var(--accent-primary); color: var(--accent-primary); }
+        .btn-copy.copied { border-color: var(--success); color: var(--success); }
+        .live-answer-body {
+            font-size: 14px; color: var(--text-secondary); line-height: 1.85;
+            max-height: 380px; overflow-y: auto;
+            padding-right: 4px;
+        }
+        .live-answer-body::-webkit-scrollbar { width: 4px; }
+        .live-answer-body::-webkit-scrollbar-track { background: transparent; }
+        .live-answer-body::-webkit-scrollbar-thumb { background: var(--border-active); border-radius: 2px; }
+        .live-answer-body p { margin-bottom: 10px; }
+        .live-answer-body p:last-child { margin-bottom: 0; }
+        .live-answer-body strong { color: var(--text-primary); font-weight: 600; }
+        .live-answer-body ul, .live-answer-body ol { padding-left: 18px; margin-bottom: 10px; }
+        .live-answer-body li { margin-bottom: 4px; }
+        .live-answer-loading {
+            display: flex; align-items: center; gap: 10px;
+            color: var(--text-muted); font-size: 13px;
+            padding: 8px 0;
+        }
+        .live-answer-error {
+            color: var(--danger); font-size: 13px; line-height: 1.6;
+        }
+        .model-badge {
+            display: inline-flex; align-items: center; gap: 4px;
+            font-size: 10px; padding: 2px 8px;
+            background: var(--accent-glow);
+            color: var(--accent-primary);
+            border: 1px solid var(--border-active);
+            border-radius: 10px; font-weight: 500;
+            margin-top: 14px;
+        }
+
+        /* ===== SCREEN 7: FEEDBACK ===== */
+        .feedback-card {
+            background: var(--bg-secondary); border: 1px solid var(--border);
+            border-radius: var(--radius-xl); padding: 32px; text-align: center; margin: 20px 0;
+        }
+        .feedback-card h2 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+        .feedback-card p { color: var(--text-secondary); font-size: 14px; margin-bottom: 20px; }
+        .stars { display: flex; justify-content: center; gap: 8px; margin-bottom: 24px; }
+        .star { font-size: 32px; cursor: pointer; transition: var(--transition); opacity: 0.3; }
+        .star:hover, .star.active { opacity: 1; transform: scale(1.15); }
+        .feedback-response {
+            padding: 16px; background: var(--success-bg);
+            border: 1px solid rgba(74, 222, 128, 0.2); border-radius: var(--radius);
+            color: var(--success); font-size: 14px; line-height: 1.6; display: none;
+        }
+        .feedback-response.visible { display: block; animation: scaleIn 0.3s ease; }
+
+        /* ===== LOADING ===== */
+        .loading-dots { display: inline-flex; gap: 4px; padding: 8px 0; }
+        .loading-dots span {
+            width: 6px; height: 6px; background: var(--accent-primary);
+            border-radius: 50%; animation: pulse 1.2s infinite;
+        }
+        .loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+        .loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+        /* ===== ERROR ===== */
+        .error-box {
+            padding: 16px; background: rgba(248, 113, 113, 0.1);
+            border: 1px solid rgba(248, 113, 113, 0.3); border-radius: var(--radius);
+            color: var(--danger); font-size: 14px; line-height: 1.6;
+        }
+
+        /* ===== RESTART ===== */
+        .restart-bar { text-align: center; padding: 16px; }
+        .btn-restart {
+            background: var(--bg-card); border: 1px solid var(--border);
+            color: var(--text-secondary); font-family: var(--font); font-size: 13px;
+            padding: 8px 20px; border-radius: 8px; cursor: pointer; transition: var(--transition);
+        }
+        .btn-restart:hover { border-color: var(--accent-primary); color: var(--text-primary); }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 640px) {
+            .app { padding: 12px; }
+            .chat-context h1 { font-size: 22px; }
+            .scorecard-grid { grid-template-columns: 1fr; }
+            .savings-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-gradient"></div>
+
+    <div class="app">
+        <!-- HEADER -->
+        <div class="header">
+            <div class="logo">
+                <div class="logo-icon">🧭</div>
+                <div class="logo-text">Claude <span>Compass</span></div>
+            </div>
+            <div class="header-badge">AI-Native Decision Layer</div>
+        </div>
+
+        <!-- PROGRESS -->
+        <div class="progress" id="progress">
+            <div class="progress-dot active" data-step="1"></div>
+            <div class="progress-dot" data-step="2"></div>
+            <div class="progress-dot" data-step="3"></div>
+            <div class="progress-dot" data-step="4"></div>
+            <div class="progress-dot" data-step="5"></div>
+            <div class="progress-dot" data-step="6"></div>
+        </div>
+
+        <!-- ===== SCREEN 1: INTENT INPUT ===== -->
+        <div class="screen active" id="screen-1">
+            <div class="chat-area">
+                <div class="chat-context">
+                    <h1>What are you trying to accomplish?</h1>
+                    <p>Describe your task and Compass will recommend the most effective Claude execution mode.</p>
+                </div>
+                <div class="input-area">
+                    <div class="input-wrapper">
+                        <textarea id="task-input" placeholder="E.g. Analyze 50 customer feedback emails, categorize sentiment, and generate a weekly report..." rows="2"></textarea>
+                        <div class="input-actions">
+                            <span class="input-hint">Compass analyzes your intent to recommend the best capability</span>
+                            <button class="btn-send" id="btn-analyze" onclick="submitIntent()">Analyze →</button>
+                        </div>
+                    </div>
+                    <div class="example-tasks" id="example-tasks">
+                        <div class="example-chip" onclick="useExample('Analyze 50 customer feedback emails, categorize sentiment, and create a weekly summary report')">📊 Customer Feedback Analysis</div>
+                        <div class="example-chip" onclick="useExample('What is the difference between a Workflow and an Agent in Claude?')">💬 Simple Factual Question</div>
+                        <div class="example-chip" onclick="useExample('Research competitors, summarize findings, and build a comparison matrix for our product team')">🔍 Competitive Research</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== SCREEN 2: COMPASS ANALYSIS ===== -->
+        <div class="screen" id="screen-2">
+            <div class="user-msg" id="user-msg-display"></div>
+
+            <div class="compass-card">
+                <div class="compass-header">
+                    <span class="compass-icon">🧭</span>
+                    <span class="compass-title">Compass Analysis</span>
+                </div>
+                <div class="compass-body" id="compass-body">
+                    <div class="loading-dots"><span></span><span></span><span></span></div>
+                    <span style="color:var(--text-muted); font-size:14px; margin-left:8px;">Decomposing your task logic…</span>
+                </div>
+                <div class="compass-actions" id="compass-actions" style="display:none;">
+                    <button class="btn-primary" onclick="goToScreen(3)">Show me the full analysis →</button>
+                    <button class="btn-ghost" onclick="goToScreen(4)">Skip to scorecard</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== SCREEN 3: DECOMPOSITION ===== -->
+        <div class="screen" id="screen-3">
+            <div class="section-label">Task Decomposition</div>
+            <div class="decomposition">
+                <div class="step-list" id="step-list"></div>
+                <div class="complexity-badge" id="complexity-badge"></div>
+            </div>
+            <div class="nav-bar">
+                <span class="step-label">Step 2 of 5 — Task Analysis</span>
+                <button class="btn-primary" onclick="goToScreen(4)">See Capability Comparison →</button>
+            </div>
+        </div>
+
+        <!-- ===== SCREEN 4: SCORECARD ===== -->
+        <div class="screen" id="screen-4">
+            <div class="section-label">Capability Scorecard</div>
+            <div class="scorecard">
+                <div class="scorecard-grid" id="scorecard-grid"></div>
+                <div class="reasoning-box">
+                    <div class="label">💡 Compass Reasoning</div>
+                    <p id="reasoning-text"></p>
+                </div>
+            </div>
+            <div class="nav-bar">
+                <button class="btn-ghost" onclick="goToScreen(3)">← Back</button>
+                <button class="btn-primary" id="btn-launch" onclick="goToScreen(5)">Launch →</button>
+            </div>
+        </div>
+
+        <!-- ===== SCREEN 5: HANDOFF ===== -->
+        <div class="screen" id="screen-5">
+            <div class="handoff-config">
+                <div class="handoff-title" id="handoff-title"></div>
+                <div id="config-steps"></div>
+                <div class="config-actions">
+                    <button class="btn-primary" onclick="goToScreen(6)">✓ Confirm &amp; Execute</button>
+                    <button class="btn-ghost" onclick="goToScreen(4)">← Modify</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== SCREEN 6: RESULT ===== -->
+        <div class="screen" id="screen-6">
+            <div class="result-card">
+                <div class="result-header">
+                    <div class="result-icon">✓</div>
+                    <div>
+                        <div class="result-title" id="result-title">Task Complete</div>
+                        <div class="result-subtitle" id="result-subtitle"></div>
+                    </div>
+                </div>
+                <div class="savings-grid" id="savings-grid"></div>
+                <div class="section-label">Compass Output Preview</div>
+                <div class="simulated-output" id="simulated-output"></div>
+            </div>
+
+            <!-- LIVE AI RESPONSE CARD -->
+            <div class="live-answer-card" id="live-answer-card">
+                <div class="live-answer-header">
+                    <div class="live-answer-title">
+                        <div class="live-answer-icon">🤖</div>
+                        <div>
+                            <div class="live-answer-label">Live AI Response</div>
+                            <div class="live-answer-sublabel">Direct answer from the model to your query</div>
+                        </div>
+                    </div>
+                    <button class="btn-copy" id="btn-copy" onclick="copyAnswer()" style="display:none;">
+                        📋 Copy
+                    </button>
+                </div>
+                <div class="live-answer-body" id="live-answer-body">
+                    <div class="live-answer-loading">
+                        <div class="loading-dots"><span></span><span></span><span></span></div>
+                        Fetching live response…
+                    </div>
+                </div>
+                <div class="model-badge" id="model-badge" style="display:none;">⚡ gpt-4o-mini via OpenRouter</div>
+            </div>
+
+            <div class="nav-bar">
+                <span class="step-label">Step 5 of 5 — Results</span>
+                <button class="btn-primary" onclick="goToScreen(7)">Rate this result →</button>
+            </div>
+        </div>
+
+        <!-- ===== SCREEN 7: FEEDBACK ===== -->
+        <div class="screen" id="screen-7">
+            <div class="feedback-card">
+                <h2>How was this result?</h2>
+                <p>Your feedback helps Compass improve future recommendations.</p>
+                <div class="stars" id="stars-container">
+                    <span class="star" onclick="rateStar(1)">⭐</span>
+                    <span class="star" onclick="rateStar(2)">⭐</span>
+                    <span class="star" onclick="rateStar(3)">⭐</span>
+                    <span class="star" onclick="rateStar(4)">⭐</span>
+                    <span class="star" onclick="rateStar(5)">⭐</span>
+                </div>
+                <div class="feedback-response" id="feedback-response">
+                    <strong>Pattern saved!</strong> Next time you describe a similar task, Compass will instantly suggest this configuration — zero evaluation time.
+                </div>
+            </div>
+            <div class="restart-bar">
+                <button class="btn-restart" onclick="restart()">↻ Try another task</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentData = null;
+        let currentScreen = 1;
+
+        // ===== EXAMPLE CHIPS =====
+        function useExample(text) {
+            document.getElementById('task-input').value = text;
+            document.getElementById('task-input').style.height = 'auto';
+            document.getElementById('task-input').style.height =
+                Math.min(document.getElementById('task-input').scrollHeight, 160) + 'px';
+        }
+
+        // ===== SUBMIT INTENT =====
+        async function submitIntent() {
+            const input = document.getElementById('task-input').value.trim();
+            if (!input) {
+                alert('Please describe your task first.');
+                return;
+            }
+
+            document.getElementById('user-msg-display').textContent = input;
+            const btn = document.getElementById('btn-analyze');
+            btn.disabled = true;
+            btn.textContent = 'Analyzing…';
+            goToScreen(2);
+
+            const body = document.getElementById('compass-body');
+            const actions = document.getElementById('compass-actions');
+            body.innerHTML = '<div class="loading-dots"><span></span><span></span><span></span></div><span style="color:var(--text-muted);font-size:14px;margin-left:8px;">Decomposing your task logic…</span>';
+            actions.style.display = 'none';
+
+            try {
+                const res = await fetch('http://localhost:8000/analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ intent: input })
+                });
+
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({}));
+                    throw new Error(err.detail || 'Server error ' + res.status);
+                }
+
+                currentData = await res.json();
+                const rec = currentData.recommendation || 'Unknown';
+
+                body.innerHTML = currentData.reasoning || '';
+                body.innerHTML += `<div style="margin-top:12px; padding:8px 12px; background:var(--accent-glow); border:1px solid var(--border-active); border-radius:8px; font-size:13px; display:inline-block;">
+                    <strong style="color:var(--accent-primary);">Recommendation:</strong> <span style="color:var(--text-primary)">${rec}</span>
+                </div>`;
+                actions.style.display = 'flex';
+
+            } catch (e) {
+                body.innerHTML = `<div class="error-box">⚠️ Error: ${e.message}. Make sure <code>main.py</code> is running on port 8000.</div>`;
+                actions.style.display = 'none';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Analyze →';
+            }
+        }
+
+        // ===== NAVIGATE =====
+        function goToScreen(num) {
+            currentScreen = num;
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            const el = document.getElementById(`screen-${num}`);
+            if (el) el.classList.add('active');
+
+            // Progress dots
+            document.querySelectorAll('.progress-dot').forEach((d, i) => {
+                d.classList.remove('active', 'done');
+                if (i + 1 < num) d.classList.add('done');
+                if (i + 1 === num) d.classList.add('active');
+            });
+
+            if (num === 3 && currentData) populateDecomposition();
+            if (num === 4 && currentData) populateScorecard();
+            if (num === 5 && currentData) populateHandoff();
+            if (num === 6 && currentData) { populateResult(); fetchAnswer(); }
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // ===== SCREEN 3: DECOMPOSITION =====
+        function populateDecomposition() {
+            const steps = currentData.steps || [];
+            const list = document.getElementById('step-list');
+            list.innerHTML = steps.map((s, i) => `
+                <div class="step-item">
+                    <div class="step-num">${i + 1}</div>
+                    <div class="step-content">
+                        <div class="step-name">${escHtml(s.name)}</div>
+                        <div class="step-desc">${escHtml(s.desc)}</div>
+                    </div>
+                    <span class="step-tag ${escHtml(s.tagClass || 'tag-process')}">${escHtml(s.tag)}</span>
+                </div>
+            `).join('');
+
+            const badge = document.getElementById('complexity-badge');
+            badge.innerHTML = `📐 <strong>Analysis:</strong> ${escHtml(currentData.complexity || '')}`;
+        }
+
+        // ===== SCREEN 4: SCORECARD =====
+        function populateScorecard() {
+            const cards = currentData.cards || [];
+            const grid = document.getElementById('scorecard-grid');
+            grid.innerHTML = cards.map(card => {
+                const rows = (card.rows || []).map(r => {
+                    let barHtml = '';
+                    if (r.bar !== undefined) {
+                        barHtml = `<div class="fit-bar"><div class="fit-bar-fill" style="width:${r.bar}%;background:${r.barColor || '#d4a574'}"></div></div>`;
+                    }
+                    return `<div class="score-row">
+                        <span class="score-label">${escHtml(r.label)}</span>
+                        <span class="score-val ${escHtml(r.valClass || '')}">${barHtml}${escHtml(r.val)}</span>
+                    </div>`;
+                }).join('');
+
+                return `<div class="score-card ${card.recommended ? 'recommended' : ''}">
+                    <div class="score-card-title">${escHtml(card.title)}</div>
+                    ${rows}
+                </div>`;
+            }).join('');
+
+            document.getElementById('reasoning-text').textContent = currentData.reasoning || '';
+
+            const rec = currentData.recommendation || 'Execute';
+            document.getElementById('btn-launch').textContent = `Launch as ${rec} →`;
+        }
+
+        // ===== SCREEN 5: HANDOFF =====
+        function populateHandoff() {
+            const rec = currentData.recommendation || 'Task';
+            const modeIcon = rec === 'Workflow' ? '⚡' : rec === 'Agent' ? '🤖' : '💬';
+            document.getElementById('handoff-title').innerHTML = `${modeIcon} Auto-Configured ${rec}`;
+
+            const steps = (currentData.steps || []).map((s, i) =>
+                `<div class="config-step"><span class="check">✓</span> Step ${i + 1}: ${escHtml(s.name)} — ${escHtml(s.desc)}</div>`
+            ).join('');
+            document.getElementById('config-steps').innerHTML = steps ||
+                '<div class="config-step"><span class="check">✓</span> Ready to execute</div>';
+        }
+
+        // ===== SCREEN 6: RESULT =====
+        function populateResult() {
+            const rec = currentData.recommendation || 'Task';
+            const userIntent = document.getElementById('user-msg-display').textContent;
+            document.getElementById('result-title').textContent = `${rec} Complete`;
+            document.getElementById('result-subtitle').textContent =
+                userIntent.length > 70 ? userIntent.substring(0, 70) + '…' : userIntent;
+
+            // Build savings items — use API data, pad to at least 3 items
+            let savings = (currentData.savings || []).slice();
+
+            // Add step count if not already there
+            const stepCount = (currentData.steps || []).length;
+            if (savings.length < 3 && stepCount > 0) {
+                savings.push({ val: `${stepCount}`, label: 'Steps Automated', newNote: 'end-to-end' });
+            }
+            // Add mode badge if still short
+            if (savings.length < 3) {
+                savings.push({ val: rec, label: 'Recommended Mode', newNote: '✓ Optimal fit' });
+            }
+
+            const savingsHtml = savings.map(s =>
+                `<div class="saving-item">
+                    <div class="saving-val">${escHtml(String(s.val))}</div>
+                    <div class="saving-label">${escHtml(s.label)}</div>
+                    ${s.newNote ? `<div class="saving-note">${escHtml(s.newNote)}</div>` : ''}
+                </div>`
+            ).join('');
+
+            document.getElementById('savings-grid').innerHTML = savingsHtml ||
+                '<div class="saving-item"><div class="saving-val">✓</div><div class="saving-label">Executed</div></div>';
+
+            // Output preview — render raw, LLM may return formatted text
+            const preview = currentData.output_preview || '';
+            document.getElementById('simulated-output').innerHTML = preview
+                ? preview.replace(/\n/g, '<br>')
+                : '<em style="color:var(--text-muted)">No output preview available.</em>';
+        }
+
+        // ===== LIVE AI ANSWER =====
+        let _lastAnswerText = '';
+
+        async function fetchAnswer() {
+            const intent = document.getElementById('user-msg-display').textContent;
+            const body = document.getElementById('live-answer-body');
+            const copyBtn = document.getElementById('btn-copy');
+            const badge = document.getElementById('model-badge');
+
+            // Reset state
+            _lastAnswerText = '';
+            copyBtn.style.display = 'none';
+            badge.style.display = 'none';
+            body.innerHTML = `<div class="live-answer-loading">
+                <div class="loading-dots"><span></span><span></span><span></span></div>
+                Fetching live response…
+            </div>`;
+
+            try {
+                const res = await fetch('http://localhost:8000/answer', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ intent })
+                });
+
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({}));
+                    throw new Error(err.detail || 'Server error ' + res.status);
+                }
+
+                const data = await res.json();
+                _lastAnswerText = data.answer || '';
+                body.innerHTML = formatAnswer(_lastAnswerText);
+                copyBtn.style.display = 'flex';
+                badge.style.display = 'inline-flex';
+
+            } catch (e) {
+                body.innerHTML = `<div class="live-answer-error">⚠️ Could not fetch answer: ${escHtml(e.message)}</div>`;
+            }
+        }
+
+        function formatAnswer(text) {
+            return text
+                .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+                .replace(/^[\-\*] (.+)$/gm, '<li>$1</li>')
+                .replace(/^\d+\. (.+)$/gm, '<li>$1</li>')
+                .replace(/(<li>[\s\S]*?<\/li>\n?)+/g, m => `<ul>${m}</ul>`)
+                .replace(/^###\s+(.+)$/gm, '<strong style="color:var(--text-primary);display:block;margin-top:12px;">$1</strong>')
+                .replace(/^##\s+(.+)$/gm, '<strong style="color:var(--text-primary);font-size:15px;display:block;margin-top:14px;">$1</strong>')
+                .replace(/\n\n/g, '</p><p style="margin-top:10px;">')
+                .replace(/\n/g, '<br>')
+                .replace(/^/, '<p>').replace(/$/, '</p>');
+        }
+
+        function copyAnswer() {
+            if (!_lastAnswerText) return;
+            navigator.clipboard.writeText(_lastAnswerText).then(() => {
+                const btn = document.getElementById('btn-copy');
+                btn.textContent = '✓ Copied!';
+                btn.classList.add('copied');
+                setTimeout(() => { btn.innerHTML = '📋 Copy'; btn.classList.remove('copied'); }, 2000);
+            });
+        }
+
+        // ===== SCREEN 7: FEEDBACK =====
+        function rateStar(n) {
+            document.querySelectorAll('.star').forEach((s, i) => s.classList.toggle('active', i < n));
+            setTimeout(() => document.getElementById('feedback-response').classList.add('visible'), 400);
+        }
+
+        // ===== RESTART =====
+        function restart() {
+            currentData = null;
+            document.getElementById('task-input').value = '';
+            document.getElementById('task-input').style.height = 'auto';
+            document.querySelectorAll('.star').forEach(s => s.classList.remove('active'));
+            document.getElementById('feedback-response').classList.remove('visible');
+            goToScreen(1);
+        }
+
+        // ===== UTIL =====
+        function escHtml(str) {
+            if (typeof str !== 'string') str = String(str ?? '');
+            return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        }
+
+        // Auto-resize textarea
+        document.getElementById('task-input').addEventListener('input', function () {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 160) + 'px';
+        });
+
+        // Enter key submits (Shift+Enter for newline)
+        document.getElementById('task-input').addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submitIntent(); }
+        });
+    </script>
+</body>
+</html>
