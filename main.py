@@ -102,7 +102,7 @@ Answer the user's question or task clearly and concisely.
 - For task requests: provide a well-structured, actionable response.
 - Use clear formatting with bullet points or short paragraphs where helpful.
 - Keep the tone professional but conversational.
-"""
+"""    
 
 @app.post("/answer")
 async def answer_query(request: TaskRequest):
@@ -133,6 +133,11 @@ async def answer_query(request: TaskRequest):
         data = response.json()
         return {"answer": data["choices"][0]["message"]["content"]}
 
+# if __name__ == "__main__":
+#     import uvicorn
+#     uvicorn.run(app, host="0.0.0.0", port=8000)
+
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    port = int(os.environ.get("PORT", 8000)) 
+    uvicorn.run(app, host="0.0.0.0", port=port)
