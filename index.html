@@ -671,6 +671,10 @@
         let currentData = null;
         let currentScreen = 1;
 
+        const API_BASE = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+            ? "http://localhost:8000"
+            : "https://final-working-prototype-nl.onrender.com";
+
         // ===== EXAMPLE CHIPS =====
         function useExample(text) {
             document.getElementById('task-input').value = text;
@@ -699,7 +703,7 @@
             actions.style.display = 'none';
 
             try {
-                const res = await fetch('http://localhost:8000/analyze', {
+                const res = await fetch(`${API_BASE}/analyze`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ intent: input })
@@ -720,7 +724,7 @@
                 actions.style.display = 'flex';
 
             } catch (e) {
-                body.innerHTML = `<div class="error-box">⚠️ Error: ${e.message}. Make sure <code>main.py</code> is running on port 8000.</div>`;
+                body.innerHTML = `<div class="error-box">⚠️ Error: ${e.message}. Make sure the backend server is running and accessible.</div>`;
                 actions.style.display = 'none';
             } finally {
                 btn.disabled = false;
@@ -868,7 +872,7 @@
             </div>`;
 
             try {
-                const res = await fetch('http://localhost:8000/answer', {
+                const res = await fetch(`${API_BASE}/answer`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ intent })
