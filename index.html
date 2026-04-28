@@ -671,9 +671,7 @@
         let currentData = null;
         let currentScreen = 1;
 
-        const API_BASE = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
-            ? "http://localhost:8000"
-            : "https://final-working-prototype-nl.onrender.com";
+        const API_BASE = "";
 
         // ===== EXAMPLE CHIPS =====
         function useExample(text) {
@@ -724,7 +722,7 @@
                 actions.style.display = 'flex';
 
             } catch (e) {
-                body.innerHTML = `<div class="error-box">⚠️ Error: ${e.message}. Make sure the backend server is running and accessible.</div>`;
+                body.innerHTML = `<div class="error-box">⚠️ Error: ${escHtml(e.message)}. The backend may be waking up (Render free tier sleeps after inactivity — wait 30s and try again).</div>`;
                 actions.style.display = 'none';
             } finally {
                 btn.disabled = false;
@@ -890,7 +888,7 @@
                 badge.style.display = 'inline-flex';
 
             } catch (e) {
-                body.innerHTML = `<div class="live-answer-error">⚠️ Could not fetch answer: ${escHtml(e.message)}</div>`;
+                body.innerHTML = `<div class="error-box">⚠️ Error: ${escHtml(e.message)}. The backend may be waking up (Render free tier sleeps after inactivity — wait 30s and try again).</div>`;
             }
         }
 
