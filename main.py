@@ -31,9 +31,7 @@ class TaskRequest(BaseModel):
     intent: str
 
 SYSTEM_PROMPT = """
-You are the Claude Compass Decision Intelligence Engine. Your goal is to solve the 'Decision Architecture' problem.
-Analyze the user's intent and return a JSON object with a dynamic task decomposition and mode comparison.
-
+"role": "system", "content": 'You are Claude Compass. Analyze the user\'s task. Suggest "prompt" if factual/simple. Suggest "workflow" if multi-step, structured, or deterministic. Suggest "agent" ONLY if it requires real-time data, trial-and-error, or autonomous decisions...'
 Modes to evaluate:
 1. Simple Prompt: Single-turn, low complexity.
 2. Workflow: Structured, multi-step, recurring.
@@ -135,4 +133,4 @@ async def answer_query(request: TaskRequest):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8000)
