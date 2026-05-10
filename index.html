@@ -491,7 +491,25 @@
             .scorecard-grid { grid-template-columns: 1fr; }
             .savings-grid { grid-template-columns: 1fr; }
         }
+        
+        /* ===== AD CONTAINER ===== */
+        .ad-container {
+            margin: 20px 0;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px dashed var(--border);
+            border-radius: var(--radius);
+            padding: 10px;
+            color: var(--text-muted);
+            font-size: 12px;
+            min-height: 90px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
     </style>
+    <!-- Google AdSense Code -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1550454486393805" crossorigin="anonymous"></script>
 </head>
 <body>
     <div class="bg-gradient"></div>
@@ -665,6 +683,20 @@
             <div class="restart-bar">
                 <button class="btn-restart" onclick="restart()">↻ Try another task</button>
             </div>
+        </div>
+
+        <!-- ===== AD CONTAINER (BOTTOM) ===== -->
+        <div class="ad-container">
+            <!-- AdSense Ad Unit -->
+            <ins class="adsbygoogle"
+                 style="display:block"
+                 data-ad-client="ca-pub-1550454486393805"
+                 data-ad-slot="XXXXXXXXXX"
+                 data-ad-format="auto"
+                 data-full-width-responsive="true"></ins>
+            <script>
+                 (adsbygoogle = window.adsbygoogle || []).push({});
+            </script>
         </div>
     </div>
 
