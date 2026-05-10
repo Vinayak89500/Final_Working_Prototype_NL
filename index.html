@@ -507,6 +507,30 @@
             align-items: center;
             justify-content: center;
         }
+
+        /* ===== ABOUT & FOOTER ===== */
+        .about-section {
+            margin: 40px 0 20px;
+            padding: 24px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.7;
+        }
+        .about-section h2 { color: var(--text-primary); font-size: 16px; margin-bottom: 12px; }
+        .about-section p { margin-bottom: 12px; }
+        .site-footer {
+            text-align: center;
+            padding: 20px 0;
+            border-top: 1px solid var(--border);
+            margin-top: 20px;
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+        .site-footer a { color: var(--text-secondary); text-decoration: none; margin: 0 10px; transition: var(--transition); }
+        .site-footer a:hover { color: var(--accent-primary); }
     </style>
     <!-- Google AdSense Code -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1550454486393805" crossorigin="anonymous"></script>
@@ -698,6 +722,21 @@
                  (adsbygoogle = window.adsbygoogle || []).push({});
             </script>
         </div>
+
+        <!-- ===== ABOUT SECTION ===== -->
+        <div class="about-section">
+            <h2>About Claude Compass</h2>
+            <p>Claude Compass is an AI-Native Decision Intelligence tool designed to help developers and product managers determine the optimal execution mode for Large Language Models. By analyzing the logic, complexity, and desired output of any given task intent, our backend intelligently routes you to a Simple Prompt, a structured Workflow, or an autonomous Agent.</p>
+            <p>Our goal is to save token costs, reduce latency, and improve AI output quality by preventing over-engineering and under-engineering of AI solutions.</p>
+        </div>
+
+        <!-- ===== FOOTER ===== -->
+        <footer class="site-footer">
+            <a href="about.html">About Us</a> | 
+            <a href="privacy.html">Privacy Policy</a> | 
+            <a href="terms.html">Terms of Service</a>
+            <div style="margin-top:10px;">&copy; 2026 Claude Compass Prototype</div>
+        </footer>
     </div>
 
     <script>
