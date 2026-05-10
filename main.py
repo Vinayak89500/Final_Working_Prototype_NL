@@ -31,13 +31,13 @@ class TaskRequest(BaseModel):
     intent: str
 
 SYSTEM_PROMPT = """
-"role": "system", "content": 'You are Claude Compass. Analyze the user\'s task. Suggest "prompt" if factual/simple. Suggest "workflow" if multi-step, structured, or deterministic. Suggest "agent" ONLY if it requires real-time data, trial-and-error, or autonomous decisions...'
+"role": "system", "content": 'You are Claude Compass. Analyze the user\'s task. Suggest "prompt" if factual/simple. Suggest "workflow" if multi-step, structured, or deterministic. Suggest "agent" for tasks requiring exploration, iteration, adaptation, or when scope is uncertain/dynamic...'
 Modes to evaluate:
-1. Simple Prompt: Single-turn, low complexity.
-2. Workflow: Structured, multi-step, recurring.
-3. Agent: Open-ended, unpredictable, high autonomy.
+1. Simple Prompt: Single-turn, low complexity, direct answers.
+2. Workflow: Structured, multi-step, recurring, predictable processes.
+3. Agent: Open-ended, exploratory, iterative, adaptive, or requiring real-time decisions.
 
-Calculate ROI based on estimated token density. A Workflow typically saves tokens by avoiding redundant context.
+Calculate ROI based on estimated token density. Workflows save tokens by avoiding redundant context. Agents excel when tasks evolve or require multiple iterations.
 
 Return ONLY raw JSON:
 {
