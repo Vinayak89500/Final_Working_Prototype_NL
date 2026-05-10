@@ -31,7 +31,7 @@ class TaskRequest(BaseModel):
     intent: str
 
 SYSTEM_PROMPT = """
-"role": "system", "content": 'You are Claude Compass. Analyze the user\'s task. Suggest "prompt" if factual/simple. Suggest "workflow" if multi-step, structured, or deterministic. Suggest "agent" for tasks requiring exploration, iteration, adaptation, or when scope is uncertain/dynamic...'
+"role": "system", "content": 'You are Claude Compass. Analyze the user\'s task. Suggest "prompt" if factual/simple. Suggest "workflow" if multi-step, structured, DETERMINISTIC, and predictable. Suggest "agent" for tasks requiring EXPLORATION, ITERATION, experimentation, adaptation, dynamic decision-making, or when scope is uncertain/evolving...'
 Modes to evaluate:
 1. Simple Prompt: Single-turn, low complexity, direct answers.
 2. Workflow: Structured, multi-step, recurring, predictable processes.
