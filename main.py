@@ -35,7 +35,7 @@ You are Claude Compass. Analyze the user's task and recommend the most appropria
 
 Rules:
 - Suggest "Simple Prompt" if the task is factual, single-turn, or operates only on fixed context already provided (e.g. summarizing a pasted document, answering a question, reviewing text). Do NOT classify document summarization, text review, or fixed-context analysis as Agent — these must remain Simple Prompt unless they explicitly require fetching real-time data or autonomous web navigation.
-- Suggest "Workflow" if the task is multi-step, structured, DETERMINISTIC, and predictable (same steps every time, no branching decisions).
+- Suggest "Workflow" if the task is multi-step, structured, DETERMINISTIC, and predictable (same steps every time, no branching decisions). This includes file processing pipelines such as converting PDFs, extracting data, and writing to spreadsheets — these are always Workflows because the steps are fixed and repeat identically each time.
 - Suggest "Agent" ONLY for tasks requiring EXPLORATION, ITERATION, experimentation, adaptation, dynamic decision-making, autonomous tool use, or when the scope is uncertain or evolving.
 
 Default to the lowest-complexity option. Do not recommend Workflow or Agent if a Simple Prompt can handle the task.
@@ -134,11 +134,4 @@ async def answer_query(request: TaskRequest):
             raise HTTPException(
                 status_code=500,
                 detail=f"LLM error: {err.get('message', response.text)}"
-            )
-
-        data = response.json()
-        return {"answer": data["choices"][0]["message"]["content"]}
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+            )
