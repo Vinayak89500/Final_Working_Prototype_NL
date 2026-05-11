@@ -739,6 +739,14 @@
             <h2>About Claude Compass</h2>
             <p>Claude Compass is an AI-Native Decision Intelligence tool designed to help developers and product managers determine the optimal execution mode for Large Language Models. By analyzing the logic, complexity, and desired output of any given task intent, our backend intelligently routes you to a Simple Prompt, a structured Workflow, or an autonomous Agent.</p>
             <p>Our goal is to save token costs, reduce latency, and improve AI output quality by preventing over-engineering and under-engineering of AI solutions.</p>
+            
+            <h3 style="color: var(--text-primary); margin: 20px 0 10px; font-size: 15px;">The Three Execution Modes</h3>
+            <p><strong>1. Simple Prompt:</strong> For factual, static, or direct generation tasks, a single large language model query is sufficient. This mode guarantees the lowest latency and token usage. It avoids the overhead of chaining tools or managing conversational state. Ideal for categorization, translation, or generating short copy.</p>
+            <p><strong>2. Structured Workflow:</strong> When a task requires multiple deterministic steps (like extracting data from an email, analyzing the sentiment of that data, and then drafting a tailored response), a Workflow is the best choice. Workflows chain together smaller, specialized LLM calls. This prevents the model from forgetting context in a massive single prompt and allows developers to maintain tight guardrails and predictable outputs.</p>
+            <p><strong>3. Autonomous Agent:</strong> For ambiguous tasks that require exploration, real-time adaptation, or tool usage (like researching the web to find competitor pricing and adjusting the strategy based on the findings), an Agent is required. Agents use a loop of Thought, Action, and Observation to dynamically navigate complex problem spaces until the goal is achieved. While highly capable, they consume the most API tokens and require careful design to prevent infinite loops.</p>
+            
+            <h3 style="color: var(--text-primary); margin: 20px 0 10px; font-size: 15px;">Why Intelligent Routing Matters</h3>
+            <p>As models like Claude 3.5 Sonnet and GPT-4o become more advanced, the challenge has shifted from "can the AI do this?" to "what is the most efficient way to make the AI do this?" Over-engineering a simple task into a multi-agent system wastes money. Under-engineering a complex task into a single prompt leads to hallucinations and poor output quality. Claude Compass solves this by acting as an intelligent routing layer for your LLM architecture.</p>
         </div>
 
         <!-- ===== FOOTER ===== -->
